@@ -11,6 +11,35 @@
 # allsmalls
 ###############################################################################
 
+
+###############################################################################
+# This short snippet for function composition is taken from 
+# https://mathieularose.com/function-composition-in-python/#solution
+
+import functools
+
+def compose(*functions):
+    # Specific to a 2-function composition
+    def compose2(f, g):
+        return lambda x: f(g(x))
+    # Generalizing the function composition for more than 2 functions    
+    return functools.reduce(compose2, functions)
+###############################################################################
+
+import re
+import os.path
+import sys
+
+def getNewDict(keyList, valueList):
+    """ Return a dictionary, initialized using two lists """
+    newDict = dict()
+    newDict.fromkeys(keyList)
+    assert(len(keyList) == len(valueList))
+    for i in range(len(keyList)):
+        newDict[keyList[i]] = valueList[i]
+        
+    return newDict
+    
 def getFromLowerCamel(theWord):
     """ Return a list of lower cased words, given a lowerCamel word """
     wordsAndSpaces = re.split(r"([a-z][a-z0-9]+|[A-Z][a-z0-9]+)", theWord)
@@ -77,7 +106,7 @@ def makeSpinal(lowerCasedList):
     """ Return a spinal-cased word """
     if not lowerCasedList:
         return ""
-    finalWord = "-".join(newList)
+    finalWord = "-".join(lowerCasedList)
     return finalWord
 
 def makeTrain(lowerCasedList):
@@ -92,28 +121,161 @@ def makeLowerSnake(lowerCasedList):
     """ Return a snake_cased word """
     if not lowerCasedList:
         return ""
-    finalWord = "_".join(newList)
+    finalWord = "_".join(lowerCasedList)
     return finalWord
     
 def makeUpperSnake(lowerCasedList):
     """ Return a SNAKE_CASED word """
     if not lowerCasedList:
         return ""
-    finalWord = "_".join(newList)
+    finalWord = "_".join(lowerCasedList)
     return finalWord.upper()
     
-def makeAllSmalls(lowerCasedList):
-    """ Return an all lower cased word, given a list of lower cased words """
-    if not lowerCasedList:
-        return ""
-    finalWord = "".join(newList)
-    return finalWord
-
 def makeAllCaps(lowerCasedList):
     """ Return an all caps word, given a list of lower cased words """
     if not lowerCasedList:
         return ""
-    finalWord = "".join(newList)
+    finalWord = "".join(lowerCasedList)
     return finalWord.upper()
+
+def makeAllSmalls(lowerCasedList):
+    """ Return an all lower cased word, given a list of lower cased words """
+    if not lowerCasedList:
+        return ""
+    finalWord = "".join(lowerCasedList)
+    return finalWord
+
+###############################################################################
+# CONSTANTS
+
+fromKeysList = ["camelCase", "CamelCase", "spinal-case", 
+                "Train-Case", "snake_case", "SNAKE_CASE"]
+fromValuesList = [getFromLowerCamel, getFromUpperCamel, getFromSpinal,
+                  getFromTrain, getFromLowerSnake, getFromUpperSnake]
+# patternList will use fromKeysList to form a dictionary                         
+patternList = [ r"(?<=\W)[a-z][a-z0-9]*([A-Z][a-z0-9]+)*",
+                r"(?<=\W)([A-Z][a-z0-9]*)+",    
+                r"(?<=\W)([a-z][a-z0-9]*-)+[a-z0-9]+",    
+                r"(?<=\W)([A-z][a-z0-9]*-)+[A-Z][a-z0-9]+",    
+                r"(?<=\W)([a-z][a-z0-9]*_)+[a-z0-9]+",    
+                r"(?<=\W)([A-Z][A-Z0-9]*_)+[A-Z0-9]+"]
+             
+toKeysList = ["camelCase", "CamelCase", "spinal-case", 
+              "Train-Case", "snake_case", "SNAKE_CASE", 
+              "ALLCAPS", "allsmalls"]
+toValuesList = [makeLowerCamel, makeUpperCamel, makeSpinal,
+                makeTrain, makeLowerSnake, makeUpperSnake,
+                makeAllCaps, makeAllSmalls]
+
+# theConvertor is the only global object that will be set in a function 
+# and accessed in another function.  Because of the restriction that the 
+# function cannot take any arguments                       
+theConvertor = "This string object is dummy; Will be replaced by a function"
+
+###############################################################################
     
+def convertorFunction(fromConvention, toConvention):
+    """ Return a composed function object """
+                 
+    fromFuncDict = getNewDict(fromKeysList, fromValuesList)
+    toFuncDict = getNewDict(toKeysList, toValuesList)
+    convertor = compose(toFuncDict[toConvention], fromFuncDict[fromConvention]) 
+    return convertor
     
+def replFunction(matchObj):
+    theWord = matchObj.group(0)
+    return theConvertor(theWord)
+    
+def processFile(fileName, fromConvention, toConvention):
+
+    if fromConvention not in fromKeysList:
+        return "UnrecognizedConvention"
+
+    if toConvention not in toKeysList:
+        return "UnrecognizedConvention"
+                        
+    if not os.path.isfile(fileName):
+        return fileName + ": " + "File does not exist!"
+    
+    # Setting the global theConvertor object
+    global theConvertor 
+    theConvertor = convertorFunction(fromConvention, toConvention)
+    
+    # Copy the original contents to a back-up file 
+    bakFile = fileName + ".bak"
+    fwBK = open(bakFile, "w")
+    fr = open(fileName)
+    originalLines = fr.readlines()
+    fwBK.writelines([l for l in originalLines])
+    fr.close()
+    fwBK.close()
+    
+    patternDict = getNewDict(fromKeysList, patternList)
+        
+    fw = open(fileName, "w")
+    for l in originalLines:
+        fw.write(re.sub(patternDict[fromConvention], replFunction, l))
+    fw.close()
+    
+    return "Success: File Processed"
+    
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2 and sys.argv[1] == "--help":
+            print "Usage:"
+            print "changeNames.py file fromMode toMode"
+            print "Available fromModes:"
+            print "camelCase"
+            print "CamelCase"
+            print "spinal-case"
+            print "Train-Case"
+            print "snake_case"
+            print "SNAKE_CASE"
+            print "ALLCAPS"
+            print "allsmalls"
+            print "Available toModes:"
+            print "camelCase"
+            print "CamelCase"
+            print "spinal-case"
+            print "Train-Case"
+            print "snake_case"
+            print "SNAKE_CASE"
+    elif len(sys.argv) != 4:
+        print "Usage: changeNames.py file fromMode toMode"
+        print "       changeNames.py --help for detailed info"
+    else:    
+        status = processFile(sys.argv[1], sys.argv[2], sys.argv[3])
+        print status
+    
+
+##############################################################################
+# UNUSED objects 
+# The Standard explicit way of defining a dictionary
+patterns = {
+    "camelCase"   : r"[a-z][a-z0-9]+([A-Z][a-z0-9]+)*",
+    "CamelCase"   : r"([A-Z][a-z0-9]+)+",
+    "spinal-case" : r"([a-z][a-z0-9]+-)+[a-z0-9]+",
+    "Train-Case"  : r"([A-z][a-z0-9]+-)+[A-Z][a-z0-9]+",
+    "snake_case"  : r"([a-z][a-z0-9]+_)+[a-z0-9]+",
+    "SNAKE_CASE"  : r"([A-Z][A-Z0-9]+_)+[A-Z0-9]+"
+}    
+
+fromFunction = {
+    "camelCase"   : getFromLowerCamel,
+    "CamelCase"   : getFromUpperCamel,
+    "spinal-case" : getFromSpinal,
+    "Train-Case"  : getFromTrain,
+    "snake_case"  : getFromLowerSnake,
+    "SNAKE_CASE"  : getFromUpperSnake
+}    
+toFunction = {
+    "camelCase"   : makeLowerCamel,
+    "CamelCase"   : makeUpperCamel,
+    "spinal-case" : makeSpinal,
+    "Train-Case"  : makeTrain,
+    "snake_case"  : makeLowerSnake,
+    "SNAKE_CASE"  : makeUpperSnake,
+    "ALLCAPS"     : makeAllCaps,
+    "allsmalls"   : makeAllSmalls
+}        
+###############################################################################
