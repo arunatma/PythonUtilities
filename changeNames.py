@@ -1,6 +1,7 @@
 # This pyton file has functions to change the names of variables in source file
 
 ###############################################################################
+# SUPPORTED MODES
 # camelCase
 # CamelCase
 # spinal-case or lisp-case or kebab-case
@@ -11,7 +12,15 @@
 # allsmalls
 ###############################################################################
 
-
+###############################################################################
+# Idea of using replacement function with extra argument taken from the link
+# below in Stack Overflow
+# http://goo.gl/uvYUXl
+#
+# Todo:
+# From the same link above, need to try "partial" from "functools"
+###############################################################################
+    
 ###############################################################################
 # This short snippet for function composition is taken from 
 # https://mathieularose.com/function-composition-in-python/#solution
@@ -167,11 +176,6 @@ toValuesList = [makeLowerCamel, makeUpperCamel, makeSpinal,
                 makeTrain, makeLowerSnake, makeUpperSnake,
                 makeAllCaps, makeAllSmalls]
 
-# theConvertor is the only global object that will be set in a function 
-# and accessed in another function.  Because of the restriction that the 
-# function cannot take any arguments                       
-theConvertor = "This string object is dummy; Will be replaced by a function"
-
 ###############################################################################
     
 def convertorFunction(fromConvention, toConvention):
@@ -182,9 +186,14 @@ def convertorFunction(fromConvention, toConvention):
     convertor = compose(toFuncDict[toConvention], fromFuncDict[fromConvention]) 
     return convertor
     
-def replFunction(matchObj):
-    theWord = matchObj.group(0)
-    return theConvertor(theWord)
+def getReplacement(theConvertor):
+        
+    def replFunction(matchObj):
+        theWord = matchObj.group(0)
+        return theConvertor(theWord)
+    
+    return replFunction    
+    
     
 def processFile(fileName, fromConvention, toConvention):
 
@@ -214,7 +223,8 @@ def processFile(fileName, fromConvention, toConvention):
         
     fw = open(fileName, "w")
     for l in originalLines:
-        fw.write(re.sub(patternDict[fromConvention], replFunction, l))
+        fw.write(re.sub(patternDict[fromConvention], 
+            getReplacement(theConvertor), l))
     fw.close()
     
     return "Success: File Processed"
@@ -225,21 +235,9 @@ if __name__ == "__main__":
             print "Usage:"
             print "changeNames.py file fromMode toMode"
             print "Available fromModes:"
-            print "camelCase"
-            print "CamelCase"
-            print "spinal-case"
-            print "Train-Case"
-            print "snake_case"
-            print "SNAKE_CASE"
-            print "ALLCAPS"
-            print "allsmalls"
+            print fromKeysList
             print "Available toModes:"
-            print "camelCase"
-            print "CamelCase"
-            print "spinal-case"
-            print "Train-Case"
-            print "snake_case"
-            print "SNAKE_CASE"
+            print toKeysList
     elif len(sys.argv) != 4:
         print "Usage: changeNames.py file fromMode toMode"
         print "       changeNames.py --help for detailed info"
@@ -247,35 +245,3 @@ if __name__ == "__main__":
         status = processFile(sys.argv[1], sys.argv[2], sys.argv[3])
         print status
     
-
-##############################################################################
-# UNUSED objects 
-# The Standard explicit way of defining a dictionary
-patterns = {
-    "camelCase"   : r"[a-z][a-z0-9]+([A-Z][a-z0-9]+)*",
-    "CamelCase"   : r"([A-Z][a-z0-9]+)+",
-    "spinal-case" : r"([a-z][a-z0-9]+-)+[a-z0-9]+",
-    "Train-Case"  : r"([A-z][a-z0-9]+-)+[A-Z][a-z0-9]+",
-    "snake_case"  : r"([a-z][a-z0-9]+_)+[a-z0-9]+",
-    "SNAKE_CASE"  : r"([A-Z][A-Z0-9]+_)+[A-Z0-9]+"
-}    
-
-fromFunction = {
-    "camelCase"   : getFromLowerCamel,
-    "CamelCase"   : getFromUpperCamel,
-    "spinal-case" : getFromSpinal,
-    "Train-Case"  : getFromTrain,
-    "snake_case"  : getFromLowerSnake,
-    "SNAKE_CASE"  : getFromUpperSnake
-}    
-toFunction = {
-    "camelCase"   : makeLowerCamel,
-    "CamelCase"   : makeUpperCamel,
-    "spinal-case" : makeSpinal,
-    "Train-Case"  : makeTrain,
-    "snake_case"  : makeLowerSnake,
-    "SNAKE_CASE"  : makeUpperSnake,
-    "ALLCAPS"     : makeAllCaps,
-    "allsmalls"   : makeAllSmalls
-}        
-###############################################################################
