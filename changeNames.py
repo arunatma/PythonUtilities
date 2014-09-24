@@ -18,7 +18,8 @@
 # http://goo.gl/uvYUXl
 #
 # Todo:
-# From the same link above, need to try "partial" from "functools"
+# 1. From the same link above, need to try "partial" from "functools"
+# 2. Option to process only specific lines or set of lines from the file
 ###############################################################################
     
 ###############################################################################
