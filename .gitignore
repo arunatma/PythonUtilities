@@ -42,5 +42,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Python Compiled Files
+# Python Compiled / Backup Files
 *.pyc
+*.py.bak

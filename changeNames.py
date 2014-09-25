@@ -195,6 +195,25 @@ def getReplacement(theConvertor):
     
     return replFunction    
     
+def lineParser(lineRange):
+    lineNums = re.split(r',', lineRange)
+    newList = list()
+    for x in lineNums:
+        if re.match(r'^\d+$', x):
+            newList.append(int(x))
+        if re.search(r':', x):
+            minMax = re.split(r':', x)
+            if len(minMax) != 2:
+                continue
+            if not re.match(r'^\d+$', minMax[0]):
+                continue
+            if not re.match(r'^\d+$', minMax[1]):
+                continue
+            lo = int(minMax[0])
+            hi = int(minMax[1]) + 1
+            for i in range(lo, hi):
+                newList.append(i)
+    return newList    
     
 def processFile(fileName, fromConvention, toConvention):
 
