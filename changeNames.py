@@ -19,7 +19,6 @@
 #
 # Todo:
 # 1. From the same link above, need to try "partial" from "functools"
-# 2. Option to process only specific lines or set of lines from the file
 ###############################################################################
     
 ###############################################################################
@@ -215,7 +214,7 @@ def lineParser(lineRange):
                 newList.append(i)
     return newList    
     
-def processFile(fileName, fromConvention, toConvention):
+def processFile(fileName, fromConvention, toConvention, ls = ""):
 
     if fromConvention not in fromKeysList:
         return "UnrecognizedConvention"
@@ -226,8 +225,6 @@ def processFile(fileName, fromConvention, toConvention):
     if not os.path.isfile(fileName):
         return fileName + ": " + "File does not exist!"
     
-    # Setting the global theConvertor object
-    global theConvertor 
     theConvertor = convertorFunction(fromConvention, toConvention)
     
     # Copy the original contents to a back-up file 
@@ -238,13 +235,23 @@ def processFile(fileName, fromConvention, toConvention):
     fwBK.writelines([l for l in originalLines])
     fr.close()
     fwBK.close()
-    
+
+    if ls != "":
+        selectLines = lineParser(ls)
+    else:
+        selectLines = range(1, sum (1 for i in originalLines) + 1)
+        
     patternDict = getNewDict(fromKeysList, patternList)
         
     fw = open(fileName, "w")
+    lineNum = 1
     for l in originalLines:
-        fw.write(re.sub(patternDict[fromConvention], 
-            getReplacement(theConvertor), l))
+        if lineNum in selectLines:
+            fw.write(re.sub(patternDict[fromConvention], 
+                getReplacement(theConvertor), l))
+        else:
+            fw.write(l)
+        lineNum += 1
     fw.close()
     
     return "Success: File Processed"
@@ -253,15 +260,18 @@ def processFile(fileName, fromConvention, toConvention):
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "--help":
             print "Usage:"
-            print "changeNames.py file fromMode toMode"
-            print "Available fromModes:"
+            print "changeNames.py file fromMode toMode <lineNumbers>"
+            print "\nAvailable fromModes:"
             print fromKeysList
-            print "Available toModes:"
+            print "\nAvailable toModes:"
             print toKeysList
-    elif len(sys.argv) != 4:
-        print "Usage: changeNames.py file fromMode toMode"
+            print "\n<lineNumbers> is optional; Default: Process all lines"
+            print "Input format Supports ',' and ':'"
+            print "Example: 1:4,6,7,9:10,14 process lines 1,2,3,4,6,7,9,10,14"
+    elif len(sys.argv) != 4 and len(sys.argv) != 5:
+        print "Usage: changeNames.py file fromMode toMode <lineNumbers>"
         print "       changeNames.py --help for detailed info"
     else:    
-        status = processFile(sys.argv[1], sys.argv[2], sys.argv[3])
+        status = processFile(*sys.argv[1:])
         print status
     
