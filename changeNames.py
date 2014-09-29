@@ -176,13 +176,12 @@ toValuesList = [makeLowerCamel, makeUpperCamel, makeSpinal,
                 makeTrain, makeLowerSnake, makeUpperSnake,
                 makeAllCaps, makeAllSmalls]
 
+fromFuncDict = getNewDict(fromKeysList, fromValuesList)
+toFuncDict = getNewDict(toKeysList, toValuesList)                
 ###############################################################################
     
 def convertorFunction(fromConvention, toConvention):
     """ Return a composed function object """
-                 
-    fromFuncDict = getNewDict(fromKeysList, fromValuesList)
-    toFuncDict = getNewDict(toKeysList, toValuesList)
     convertor = compose(toFuncDict[toConvention], fromFuncDict[fromConvention]) 
     return convertor
     
@@ -230,7 +229,7 @@ def processFile(fileName, fromConvention, toConvention, ls = ""):
     # Copy the original contents to a back-up file 
     bakFile = fileName + ".bak"
     fwBK = open(bakFile, "w")
-    fr = open(fileName)
+    fr = open(fileName, 'r')
     originalLines = fr.readlines()
     fwBK.writelines([l for l in originalLines])
     fr.close()
