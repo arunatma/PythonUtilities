@@ -11,38 +11,33 @@
 # Input: 11001      Output: 25
 # Input: cats       Output: 75
 
-#inList = [1, 2, 3, 4, 3]
-inList = list("cats")
-noDups = set(inList)
+def getMinIndex(codeWord):
+    # Minimum index is possible only if it starts with 1. Then assign numbers 
+    # from 0, 2, 3... to different digits from left to right.  If a digit 
+    # repeats, whose value is already assigned, use the same assigned value.
+    numElems = len(codeWord)
+    uniqueElements = list(set(codeWord))
+    base = len(uniqueElements)
+    exponents = range(0, numElems)
+    weights = [base**x for x in exponents[::-1]]
 
-uniqueElements = list(noDups)
-minBase = len(uniqueElements)
-numElems = len(inList)
+    valueDict = dict()
+    for i in exponents:
+        if(i == 0):
+            valueDict[codeWord[i]] = 1
+        else:
+            if not codeWord[i] in valueDict.keys():
+                if (len(valueDict.keys()) == 1):
+                    valueDict[codeWord[i]] = 0
+                else:
+                    valueDict[codeWord[i]] = max(valueDict.values()) + 1
 
-superScripts = range(0, numElems)
+    positionValues = [valueDict[key] for key in codeWord]
 
-weights = [minBase**x for x in superScripts[::-1]]
-
-indexer = dict()
-for i in superScripts:
-    if(i == 0):
-        indexer[inList[i]] = 1
-    else:
-        if not inList[i] in indexer.keys():
-            if (len(indexer.keys()) == 1):
-                indexer[inList[i]] = 0
-            else:
-                indexer[inList[i]] = max(indexer.values()) + 1
-        
-positionValues = [indexer[key] for key in inList]
-
-finalValue = sum ([x * y for x,y in zip(positionValues, weights)])
+    minIndex = sum ([x * y for x,y in zip(positionValues, weights)])
+       
+    return(minIndex)
    
-print inList
-print indexer    
-print minBase
-print superScripts
-print positionValues
-print weights
- 
-print finalValue
+# Function Call   
+index = getMinIndex("cats")
+print (index)
