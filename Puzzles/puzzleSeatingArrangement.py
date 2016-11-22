@@ -37,7 +37,6 @@ def swapper(diffList, start, last):
         diffList[last] = diffList[last - 1] - 1
         diffList[last - 1] = x + 1
         last = last - 1
-        print diffList
         
     return(skipCount, diffList)
     
@@ -67,7 +66,6 @@ def superSwap(diffList):
                 minKey = elem
 
         if(len(mover.keys()) > 0):
-            print "minKey", minKey
             if minKey == 1:
                 minKey = min(mover.keys())
             last = mover[minKey]
@@ -84,27 +82,25 @@ def superSwap(diffList):
         if(start == last):
             break
         
-        print "start", start
-        print "last", last 
-        
         skipCount, diffList = swapper(diffList, start, last)
-        print "skipCount", skipCount
         retVal = retVal + (last - start) - skipCount
         numGt0 = len(filter(lambda x: x > 0, diffList))
-        print numGt0
         
     return(retVal)
 
 rowNum = [0, 1, 2, 3]
 maxC = [2, 1, 1, 0]
-#maxC = [0, 1, 3, 3]
         
 diffList = [x - y for x, y in zip(maxC, rowNum)]
-    
-diffList = [4, 0, 3, 0, 0, 0, -5, -2, -1]    
-diffList = [4, 0, 3, -5, 0, 0, 0, -2, -1]    
-diffList = [4, 0, 3, -5, -3, 0, 0, -2, -1]    
-#diffList = [2, 1, 0, -3]    # [0, -1, 0, -1] unbound
-#diffList = [2, -1, -1]     # 2
-#diffList = [2, 0, -1, -3]  # 4
+
+# diffList = [4, 0, 3, 0, 0, 0, -5, -2, -1]    
+# diffList = [4, 0, 3, -5, 0, 0, 0, -2, -1]    
+# diffList = [4, 0, 3, -5, -3, 0, 0, -2, -1]    
+# diffList = [2, 1, 0, -3]    
+# diffList = [0, -1, 0, -1] 
+# diffList = [2, -1, -1]     # 2
+# diffList = [2, 0, -1, -3]  # 4
+# diffList = [3, 0, -1, -3]  # 5
+print diffList    
 print superSwap(diffList)
+
